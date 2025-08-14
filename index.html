@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefindNotes - AI Note Cleaner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #0f172a, #8e2de2, #e0312d);
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #f8fafc;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .auth-btn {
+            background: transparent;
+            color: #cbd5e1;
+            border: 1px solid #38bdf8;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+        }
+
+        .auth-btn:hover {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: #cbd5e1;
+            border: 1px solid #ef4444;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #38bdf8;
+        }
+
+        .clean-btn {
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .clean-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 0 100px;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: white;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            color: #ffffff;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 0;
+            background-color: inherit;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            color: #f8fafc;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+
+        .feature-card p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 0;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            border-radius: 50%;
+            line-height: 50px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .step h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #f8fafc;
+        }
+
+        .step p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Auth Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #f8fafc;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        .form-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #94a3b8;
+        }
+
+        .switch-form a {
+            color: #38bdf8;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.2rem;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .steps {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .step {
+                margin-bottom: 40px;
+            }
+            
+            .auth-buttons {
+                gap: 10px;
+            }
+            
+            .auth-btn, .logout-btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo-container">
+                    <a href="index.html" class="logo">Refind<span>Notes</span></a>
+                    <div class="auth-buttons" id="authButtons">
+                        <button class="auth-btn" id="signinBtn">Sign In</button>
+                        <button class="auth-btn" id="signupBtn">Sign Up</button>
+                    </div>
+                    <div class="user-info" id="userInfo" style="display: none;">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <button class="logout-btn" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#more">More</a>
+                    <a href="cleaner.html" class="clean-btn">Clean your notes</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <h1>Your thoughts. Sharpened</h1>
+            <p>Taking your notes to a next level</p>
+            <p>Put in your unorganized meeting notes receive clean, structured notes</p>
+            <p>Give us your chaotic notes and we will sharpen them and make them neater</p>
+            <a href="cleaner.html" class="cta-button">Get Started</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="about">
+        <div class="container">
+            <h2 class="section-title">Why Choose RefindNotes</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>AI-Powered Cleaning</h3>
+                    <p>Our advanced AI algorithms analyze and restructure your notes for maximum clarity and organization.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Transform messy notes into clean, structured documents in seconds, not minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure & Private</h3>
+                    <p>Your notes are processed securely and never stored on our servers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="more">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Paste Your Notes</h3>
+                    <p>Copy and paste your unorganized notes into our platform.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>AI Processing</h3>
+                    <p>Our AI analyzes and structures your content for clarity.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Get Clean Notes</h3>
+                    <p>Receive your polished, organized notes ready to use.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Sign In</h2>
+            <div class="error-message" id="errorMessage"></div>
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="form-btn" id="submitBtn">Sign In</button>
+            </form>
+            <div class="switch-form">
+                <span id="switchText">Don't have an account? <a id="switchLink">Sign Up</a></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://oohtgfmkwdpvhfkietwp.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vaHRnZm1rd2Rwdmhma2lldHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxOTU0ODQsImV4cCI6MjA3MDc3MTQ4NH0.NWcyZIa0fz_oheffQm0DJuRsQ2DE1cjUfZUra3FtDVU';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // DOM Elements
+        const authButtons = document.getElementById('authButtons');
+        const userInfo = document.getElementById('userInfo');
+        const userAvatar = document.getElementById('userAvatar');
+        const signinBtn = document.getElementById('signinBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authModal = document.getElementById('authModal');
+        const closeModal = document.querySelector('.close');
+        const modalTitle = document.getElementById('modalTitle');
+        const authForm = document.getElementById('authForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // State
+        let isSignUp = false;
+
+        // Check user session on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                showUser(session.user);
+            } else {
+                showAuthButtons();
+            }
+        });
+
+        // Auth Event Listener
+        supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+                showUser(session.user);
+            } else {
+                showAuthButtons();
+            }
+        });
+
+        // Show user info
+        function showUser(user) {
+            const email = user.email;
+            const initials = email.charAt(0).toUpperCase();
+            userAvatar.textContent = initials;
+            authButtons.style.display = 'none';
+            userInfo.style.display = 'flex';
+        }
+
+        // Show auth buttons
+        function showAuthButtons() {
+            userInfo.style.display = 'none';
+            authButtons.style.display = 'flex';
+        }
+
+        // Open modal
+        function openModal(isSignUpMode = false) {
+            isSignUp = isSignUpMode;
+            modalTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            
+            // Update switch text
+            document.getElementById('switchText').innerHTML = isSignUp 
+                ? 'Already have an account? <a id="switchLink">Sign In</a>' 
+                : 'Don\'t have an account? <a id="switchLink">Sign Up</a>';
+            
+            // Attach event listener to the switch link
+            document.getElementById('switchLink').addEventListener('click', toggleForm);
+            
+            errorMessage.style.display = 'none';
+            authModal.style.display = 'block';
+        }
+
+        // Close modal
+        function closeModalFunc() {
+            authModal.style.display = 'none';
+            authForm.reset();
+        }
+
+        // Toggle between sign in and sign up
+        function toggleForm(e) {
+            e.preventDefault();
+            openModal(!isSignUp);
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        // Event Listeners
+        signinBtn.addEventListener('click', () => openModal(false));
+        signupBtn.addEventListener('click', () => openModal(true));
+        closeModal.addEventListener('click', closeModalFunc);
+        window.addEventListener('click', (event) => {
+            if (event.target == authModal) {
+                closeModalFunc();
+            }
+        });
+
+        // Form submission
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            try {
+                if (isSignUp) {
+                    const { data, error } = await supabase.auth.signUp({
+                        email,
+                        password
+                    });
+                    if (error) throw error;
+                    showError('Check your email for confirmation link');
+                } else {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password
+                    });
+                    if (error) throw error;
+                    closeModalFunc();
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', async () => {
+            const { error } = await supabase.auth.signOut();
+            if (error) console.error('Error logging out:', error);
+            else showAuthButtons();
+        });
+    </script>
+</body>
+</html>

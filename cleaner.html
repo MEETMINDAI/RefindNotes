@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Meeting Notes Enhancer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      min-height: 100vh;
+    }
+    .container { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    h1 { color: #2d3748; margin-bottom: 8px; font-size: 2.5rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+    .subtitle { color: #718096; margin-bottom: 32px; font-size: 1.1rem; }
+    /* --- Simplified Toggle Button Styles --- */
+    .toggle-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .toggle-btn {
+      background-color: #e2e8f0;
+      color: #4a5568;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .toggle-btn:hover {
+      background-color: #cbd5e0;
+    }
+    .toggle-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 10px rgba(102, 126, 234, 0.2);
+    }
+    /* --- End of Simplified Toggle Button Styles --- */
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 16px;
+      margin: 16px 0;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      resize: vertical;
+      transition: border-color 0.3s ease;
+      position: relative; /* For absolute positioning of clear button */
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 16px;
+      margin-right: 10px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    #output {
+      margin-top: 32px;
+      padding: 24px;
+      background: #f7fafc;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      min-height: 100px;
+      position: relative;
+    }
+    .error {
+      color: #e53e3e;
+      background: #fed7d7;
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid #e53e3e;
+    }
+    .loading {
+      color: #4a5568;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e2e8f0;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    ul {
+      padding-left: 24px;
+      margin: 12px 0;
+    }
+    li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .result-section {
+      margin-bottom: 24px;
+    }
+    .result-section h4 {
+      color: #2d3748;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .success-header {
+      color: #38a169;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    /* --- Copy Button Style (Matches main button) --- */
+    .copy-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 20px auto 0 auto;
+      display: none;
+    }
+    .copy-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    .copy-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    /* --- End of Copy Button Style --- */
+    /* --- Export Button Style (Smaller version of Copy button) --- */
+    .export-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px; /* Smaller padding */
+      font-size: 14px; /* Smaller font size */
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 20px auto 0 auto; /* Center it horizontally with top margin */
+      display: none; /* Start hidden */
+    }
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    .export-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    /* --- End of Export Button Style --- */
+    /* --- Clear Button Style (Inside Textarea) --- */
+    .clear-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .clear-btn:hover {
+      background: #c0392b;
+    }
+    /* --- End of Clear Button Style --- */
+    .fallback-tag {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      margin-left: 10px;
+      border: 1px solid #ffeaa7;
+    }
+    .ai-tag {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      margin-left: 10px;
+      border: 1px solid #c3e6cb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      AI Meeting Notes Enhancer
+    </h1>
+    <p class="subtitle">Paste your raw meeting notes. Get a professional summary and clear actions.</p>
+    <!-- --- Simplified Toggle Buttons --- -->
+    <div class="toggle-container">
+      <button class="toggle-btn active" onclick="setMode('meeting')">Meeting Notes</button>
+      <button class="toggle-btn" onclick="setMode('normal')">Normal Notes</button>
+    </div>
+    <!-- --- End of Simplified Toggle Buttons --- -->
+    <div style="position: relative;"> <!-- Wrapper for textarea and clear button -->
+      <textarea id="input" placeholder="Paste your meeting notes here...">team sync marketing product
+Date Mar 15 2024
+Attendees Rachel PM Tom marketing Kevin dev Sam design Emily content
+beta feedback onboarding too long 5 steps
+plan 2 step flow Kevin build needs mockups from Sam by Mar 22
+marketing launch target Apr 1 Q2 goal
+waiting product screenshots Sam updated features Rachel
+blog 80 percent done Emily
+Kevin review dev posts by Mar 20
+dashboard layout tweaks Rachel wants
+Sam revise wireframes by Mar 18
+extra 5k approved paid ads
+Tom coordinate finance
+blockers slow design review unclear priorities marketing product not synced
+next meeting Mar 22 status update</textarea>
+      <!-- --- Clear Button Inside Textarea --- -->
+      <button class="clear-btn" onclick="clearInput()">Clear</button>
+      <!-- --- End of Clear Button --- -->
+    </div>
+    <button onclick="cleanNotes()" id="cleanBtn">Clean My Notes</button>
+    <div id="output"></div>
+    <!-- --- Buttons Row for Copy and Export --- -->
+    <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+        <button id="copyOutputBtn" class="copy-btn">Copy Enhanced Notes</button>
+        <button id="exportOutputBtn" class="export-btn">Export as Word File</button>
+    </div>
+    <!-- --- End of Buttons Row --- -->
+  </div>
+  <!-- Load docx.js library for Word file generation -->
+  <script src="https://unpkg.com/docx@7.4.1/build/index.js"></script>
+  <script>
+    // --- Global variable to track the current mode ---
+    let currentMode = 'meeting';
+    // --- Function to set the mode and update button styles ---
+    function setMode(mode) {
+      currentMode = mode;
+      console.log("Mode set to:", currentMode);
+      // Update button styles
+      const buttons = document.querySelectorAll('.toggle-btn');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(mode)) {
+          btn.classList.add('active');
+        }
+      });
+      // Update placeholder text based on mode
+      const inputArea = document.getElementById('input');
+      if (mode === 'meeting') {
+        inputArea.placeholder = "Paste your meeting notes here...";
+      } else {
+        inputArea.placeholder = "Paste your normal/study notes here...";
+      }
+      // Clear output when mode changes
+      document.getElementById('output').innerHTML = '';
+      document.getElementById('copyOutputBtn').style.display = 'none';
+      document.getElementById('exportOutputBtn').style.display = 'none'; // Hide export button too
+    }
+    // --- Function for the Clear button inside textarea ---
+    function clearInput() {
+        document.getElementById('input').value = '';
+        document.getElementById('input').focus(); // Refocus the textarea
+    }
+    // --- ONLY USE HUGGING FACE FLAN-T5-BASE (even though it's failing) ---
+    const AI_PROVIDERS = [
+      {
+        name: "Hugging Face FLAN-T5 Base",
+        url: "https://api-inference.huggingface.co/models/google/flan-t5-base", // This model seems to be 404ing
+        headers: {
+          "Authorization": "Bearer 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",
+          "Content-Type": "application/json"
+        },
+        // --- DYNAMIC PROMPT BASED ON MODE ---
+        formatRequest: (input) => {
+          let prompt = "";
+          if (currentMode === 'meeting') {
+            prompt = `Act as a professional meeting minutes secretary. Your goal is to take the raw, sometimes fragmented meeting notes and transform them into a clear, well-organized, and easy-to-understand summary. Focus on making the information significantly clearer than the original input.
+Strictly follow this output format. Do not include markdown or extra text.
+**MEETING OBJECTIVE:**
+[One clear sentence stating the main goal or purpose of the meeting.]
+**KEY DISCUSSION POINTS & OUTCOMES:**
+- [A concise, polished sentence summarizing a main topic and its conclusion or status.]
+(Repeat for each major topic discussed.)
+**ASSIGNED TASKS:**
+- [Clearly state what needs to be done] - [Who is responsible] (Due: [Date if given])
+(Include all tasks, ensuring the action and owner are unambiguous.)
+**IMPORTANT FACTS/DECISIONS:**
+- [A clear, standalone sentence describing an important fact, approval, or decision made.]
+**Meeting Notes to Clarify:**
+${input}`;
+          } else { // Normal Notes mode
+            prompt = `You are an expert study aid creator. Take the following raw, unstructured notes and reformat them into a clean, organized, and easy-to-study format. Group related ideas, summarize key points, and use bullet points for clarity. Make the information significantly easier to understand and review than the original. Break down long paragraphs into shorter, digestible bullet points.
+Strictly follow this output format. Do not include markdown or extra text.
+**MAIN TOPICS COVERED:**
+[List the main subjects or themes discussed in the notes.]
+**ORGANIZED SUMMARY:**
+- [Condensed and clear summary point about a key concept.]
+(Repeat for each main idea or group of related notes.)
+**KEY DEFINITIONS/TERMS:**
+- [Term]: [Clear and concise definition.]
+(Include important vocabulary introduced.)
+**ACTIONABLE STUDY POINTS:**
+- [A specific thing to remember, understand, or look up further.]
+(Repeat for items that require deeper learning or memorization.)
+**Raw Notes to Organize:**
+${input}`;
+          }
+          return {
+            inputs: prompt,
+            parameters: {
+              max_new_tokens: 650, // Increased token limit
+              temperature: 0.4,    // Low for consistency
+              top_p: 0.92,
+              return_full_text: false
+            }
+          };
+        },
+        // --- END OF DYNAMIC PROMPT ---
+        parseResponse: (data) => data[0]?.generated_text
+      }
+    ];
+    async function tryAIProvider(provider, input) {
+      try {
+        console.log(`Trying ${provider.name}...`);
+        const response = await fetch(provider.url, {
+          method: "POST",
+          headers: provider.headers,
+          body: JSON.stringify(provider.formatRequest(input))
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`${provider.name} API Error Response:`, errorText);
+          // Specific check for 404
+          if (response.status === 404) {
+              throw new Error(`${provider.name} endpoint not found (404). Model might be unavailable.`);
+          }
+          throw new Error(`${provider.name} API error: ${response.status} - ${errorText}`);
+        }
+        const data = await response.json();
+        console.log(`${provider.name} Raw Response:`, data);
+        const result = provider.parseResponse(data);
+        if (!result || result.trim() === "") {
+          throw new Error(`${provider.name} returned empty response`);
+        }
+        return {
+          success: true,
+           result,
+          provider: provider.name
+        };
+      } catch (error) {
+        console.warn(`${provider.name} failed:`, error);
+        return {
+          success: false,
+          error: error.message,
+          provider: provider.name
+        };
+      }
+    }
+    async function cleanNotes() {
+      const input = document.getElementById('input').value.trim();
+      const output = document.getElementById('output');
+      const cleanBtn = document.getElementById('cleanBtn');
+      const copyBtn = document.getElementById('copyOutputBtn'); // Get the moved button
+      const exportBtn = document.getElementById('exportOutputBtn'); // Get the export button
+      if (!input) {
+        output.innerHTML = '<div class="error">⚠️ Please enter your notes first!</div>';
+        copyBtn.style.display = 'none';
+        exportBtn.style.display = 'none'; // Hide export button too
+        return;
+      }
+      cleanBtn.disabled = true;
+      cleanBtn.textContent = 'Processing...';
+      copyBtn.style.display = 'none'; // Hide button while processing
+      exportBtn.style.display = 'none'; // Hide export button while processing
+      output.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          Attempting AI analysis...
+        </div>
+      `;
+      let result = null;
+      // --- Only try the one Hugging Face provider ---
+      for (const provider of AI_PROVIDERS) {
+        output.innerHTML = `
+          <div class="loading">
+            <div class="spinner"></div>
+            Trying ${provider.name}...
+          </div>
+        `;
+        result = await tryAIProvider(provider, input);
+        if (result.success) {
+          break; // Stop if successful
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Brief wait
+      }
+      cleanBtn.disabled = false;
+      cleanBtn.textContent = 'Clean My Notes';
+      // --- Handle Results ---
+      if (result && result.success) {
+        try {
+          // --- Parse the AI's structured response based on the mode ---
+          let parsedData = null;
+          let finalHTMLContent = "";
+          let providerUsed = result.provider;
+          if (currentMode === 'meeting') {
+            parsedData = parseAIMeetingResponse(result.data);
+            finalHTMLContent = formatAIMeetingResults(parsedData, providerUsed);
+          } else { // Normal Notes mode
+            parsedData = parseAINormalResponse(result.data);
+            finalHTMLContent = formatAINormalResults(parsedData, providerUsed);
+          }
+          output.innerHTML = finalHTMLContent;
+          copyBtn.style.display = 'block'; // Show button after successful AI processing
+          exportBtn.style.display = 'block'; // Show export button after successful AI processing
+          setupCopyButton(finalHTMLContent);
+          setupExportButton(finalHTMLContent); // Setup export button
+          return;
+        } catch (error) {
+          console.error('AI Parsing error:', error);
+          // Show raw output if parsing fails
+          output.innerHTML = `<div class="error">❌ Error parsing the response from ${result.provider}. Showing raw output:</div><pre style="white-space: pre-wrap; background: #f0f0f0; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">${result.data}</pre>`;
+          copyBtn.style.display = 'block'; // Show button even if parsing fails (to copy raw output)
+          exportBtn.style.display = 'block'; // Show export button even if parsing fails (to export raw output)
+          setupCopyButton(`<pre>${result.data}</pre>`);
+          setupExportButton(`<pre>${result.data}</pre>`); // Setup export for raw output
+          return;
+        }
+      } else {
+        // --- AI Call Failed - Show Fallback Clearly ---
+        console.error("AI call failed:", result?.error);
+        // const errorMessage = `<div class="error">⚠️ AI Analysis Unavailable<br>(${result?.provider || 'Hugging Face'}: ${result?.error || 'Unknown error'}).<br>Showing local analysis instead.</div>`;
+        const fallbackHTML = generateImprovedFallbackParsing(input);
+        output.innerHTML = /* errorMessage + */ fallbackHTML; // Removed error message as requested
+        copyBtn.style.display = 'block'; // Show button for fallback content
+        exportBtn.style.display = 'block'; // Show export button for fallback content
+        setupCopyButton(fallbackHTML); // Setup copy for fallback content only
+        setupExportButton(fallbackHTML); // Setup export for fallback content only
+        return;
+      }
+    }
+    // --- Parsing logic for MEETING NOTES AI response ---
+    function parseAIMeetingResponse(aiText) {
+      console.log("Attempting to parse MEETING AI text:", aiText);
+      const sections = {
+        objective: "Meeting objective could not be determined.",
+        discussionPoints: [],
+        assignedTasks: [],
+        importantFacts: []
+      };
+      if (!aiText) {
+          console.error("AI text is null or undefined");
+          return sections;
+      }
+      try {
+        // --- Parsing based on the MEETING prompt's headers ---
+        // 1. MEETING OBJECTIVE
+        const objectiveMatch = aiText.match(/\*\*MEETING OBJECTIVE:\*\*\s*(.*?)\s*(?=\n\n\*\*KEY DISCUSSION POINTS \& OUTCOMES:|\n\n\*\*ASSIGNED TASKS:|\n\n\*\*IMPORTANT FACTS\/DECISIONS:|$)/i);
+        if (objectiveMatch && objectiveMatch[1].trim()) {
+            sections.objective = objectiveMatch[1].trim();
+        }
+        // 2. KEY DISCUSSION POINTS & OUTCOMES
+        const discussionMatch = aiText.match(/\*\*KEY DISCUSSION POINTS \& OUTCOMES:\*\*\s*(.*?)\s*(?=\n\n\*\*ASSIGNED TASKS:|\n\n\*\*IMPORTANT FACTS\/DECISIONS:|$)/i);
+        if (discussionMatch && discussionMatch[1].trim()) {
+            sections.discussionPoints = discussionMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => item.substring(1).trim()); // Remove '- '
+        }
+        // 3. ASSIGNED TASKS
+        const tasksMatch = aiText.match(/\*\*ASSIGNED TASKS:\*\*\s*(.*?)\s*(?=\n\n\*\*IMPORTANT FACTS\/DECISIONS:|$)/i);
+        if (tasksMatch && tasksMatch[1].trim()) {
+            sections.assignedTasks = tasksMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => item.substring(1).trim()); // Remove '- '
+        }
+        // 4. IMPORTANT FACTS/DECISIONS
+        const factsMatch = aiText.match(/\*\*IMPORTANT FACTS\/DECISIONS:\*\*\s*(.*?)(?=\s*$)/i);
+        if (factsMatch && factsMatch[1].trim()) {
+            sections.importantFacts = factsMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => item.substring(1).trim()); // Remove '- '
+        }
+        // --- End of Parsing ---
+      } catch (error) {
+        console.error('Error during MEETING prompt parsing logic:', error);
+      }
+      console.log("Final parsed sections (Meeting):", sections);
+      return sections;
+    }
+    // --- Format the parsed MEETING AI results for display ---
+    function formatAIMeetingResults(parsed, providerName) {
+      const formatList = (items) => items && items.length ? `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p><em>None identified.</em></p>';
+      return `
+        <div class="success-header">✅ Meeting Notes Enhanced Successfully <span class="ai-tag">AI Analysis</span></div>
+        <div class="result-section">
+          <h4>🎯 Meeting Objective</h4>
+          <div><p>${parsed.objective || "N/A"}</p></div>
+        </div>
+        <div class="result-section">
+          <h4>📌 Key Discussion Points & Outcomes</h4>
+          <div>${formatList(parsed.discussionPoints)}</div>
+        </div>
+        <div class="result-section">
+          <h4>✅ Assigned Tasks</h4>
+          <div>${formatList(parsed.assignedTasks)}</div>
+        </div>
+        <div class="result-section">
+          <h4>📋 Important Facts/Decisions</h4>
+          <div>${formatList(parsed.importantFacts)}</div>
+        </div>
+        <div style="font-size: 0.85rem; color: #7f8c8d; margin-top: 25px; text-align: center;">
+          <em>Processed by ${providerName}. Analysis via AI.</em>
+        </div>
+      `;
+    }
+    // --- Parsing logic for NORMAL NOTES AI response ---
+    function parseAINormalResponse(aiText) {
+      console.log("Attempting to parse NORMAL AI text:", aiText);
+      const sections = {
+        mainTopics: "Main topics could not be determined.",
+        organizedSummary: [],
+        keyDefinitions: [],
+        studyPoints: []
+      };
+      if (!aiText) {
+          console.error("AI text is null or undefined");
+          return sections;
+      }
+      try {
+        // --- Parsing based on the NORMAL prompt's headers ---
+        // 1. MAIN TOPICS COVERED
+        const topicsMatch = aiText.match(/\*\*MAIN TOPICS COVERED:\*\*\s*(.*?)\s*(?=\n\n\*\*ORGANIZED SUMMARY:|\n\n\*\*KEY DEFINITIONS\/TERMS:|\n\n\*\*ACTIONABLE STUDY POINTS:|$)/i);
+        if (topicsMatch && topicsMatch[1].trim()) {
+            sections.mainTopics = topicsMatch[1].trim();
+        }
+        // 2. ORGANIZED SUMMARY
+        const summaryMatch = aiText.match(/\*\*ORGANIZED SUMMARY:\*\*\s*(.*?)\s*(?=\n\n\*\*KEY DEFINITIONS\/TERMS:|\n\n\*\*ACTIONABLE STUDY POINTS:|$)/i);
+        if (summaryMatch && summaryMatch[1].trim()) {
+            sections.organizedSummary = summaryMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => item.substring(1).trim()); // Remove '- '
+        }
+        // 3. KEY DEFINITIONS/TERMS
+        const defsMatch = aiText.match(/\*\*KEY DEFINITIONS\/TERMS:\*\*\s*(.*?)\s*(?=\n\n\*\*ACTIONABLE STUDY POINTS:|$)/i);
+        if (defsMatch && defsMatch[1].trim()) {
+            sections.keyDefinitions = defsMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => {
+                    // Format "Term: Definition"
+                    const parts = item.substring(1).trim().split(':');
+                    const term = parts[0]?.trim();
+                    const def = parts.slice(1).join(':').trim(); // Join in case definition has ':'
+                    return `<strong>${term}:</strong> ${def}`;
+                });
+        }
+        // 4. ACTIONABLE STUDY POINTS
+        const studyMatch = aiText.match(/\*\*ACTIONABLE STUDY POINTS:\*\*\s*(.*?)(?=\s*$)/i);
+        if (studyMatch && studyMatch[1].trim()) {
+            sections.studyPoints = studyMatch[1].split('\n')
+                .map(item => item.trim())
+                .filter(item => item.startsWith('-'))
+                .map(item => item.substring(1).trim()); // Remove '- '
+        }
+        // --- End of Parsing ---
+      } catch (error) {
+        console.error('Error during NORMAL prompt parsing logic:', error);
+      }
+      console.log("Final parsed sections (Normal):", sections);
+      return sections;
+    }
+    // --- Format the parsed NORMAL AI results for display ---
+    function formatAINormalResults(parsed, providerName) {
+      const formatList = (items) => items && items.length ? `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p><em>None identified.</em></p>';
+      const formatDefList = (items) => items && items.length ? `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p><em>None identified.</em></p>';
+      return `
+        <div class="success-header">✅ Normal Notes Organized Successfully <span class="ai-tag">AI Analysis</span></div>
+        <div class="result-section">
+          <h4>📚 Main Topics Covered</h4>
+          <div><p>${parsed.mainTopics || "N/A"}</p></div>
+        </div>
+        <div class="result-section">
+          <h4>📌 Organized Summary</h4>
+          <div>${formatList(parsed.organizedSummary)}</div>
+        </div>
+        <div class="result-section">
+          <h4>📖 Key Definitions/Terms</h4>
+          <div>${formatDefList(parsed.keyDefinitions)}</div>
+        </div>
+        <div class="result-section">
+          <h4>🧠 Actionable Study Points</h4>
+          <div>${formatList(parsed.studyPoints)}</div>
+        </div>
+        <div style="font-size: 0.85rem; color: #7f8c8d; margin-top: 25px; text-align: center;">
+          <em>Processed by ${providerName}. Analysis via AI.</em>
+        </div>
+      `;
+    }
+    function setupCopyButton(htmlContent) {
+        const copyBtn = document.getElementById('copyOutputBtn');
+        if (!copyBtn) return;
+        copyBtn.onclick = async () => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.disabled = true;
+                setTimeout(() => { copyBtn.textContent = originalText; copyBtn.disabled = false; }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy text.');
+            }
+        };
+    }
+    // --- New Export to Word Functionality ---
+    function setupExportButton(htmlContent) {
+        const exportBtn = document.getElementById('exportOutputBtn');
+        if (!exportBtn) return;
+        exportBtn.onclick = () => {
+            try {
+                // Create a temporary element to parse the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                // --- Extract content for DOCX ---
+                let docContent = "";
+                // 1. Header
+                const header = tempDiv.querySelector('.success-header');
+                if (header) {
+                    const headerClone = header.cloneNode(true);
+                    const tagSpan = headerClone.querySelector('span');
+                    if (tagSpan) tagSpan.remove();
+                    docContent += `<h1>${headerClone.textContent.trim()}</h1>\n`;
+                }
+                // 2. Sections
+                const sections = tempDiv.querySelectorAll('.result-section');
+                sections.forEach(section => {
+                    const sectionHeader = section.querySelector('h4');
+                    if (sectionHeader) {
+                        docContent += `<h2>${sectionHeader.textContent.trim()}</h2>\n`;
+                    }
+                    const list = section.querySelector('ul');
+                    if (list) {
+                        const items = list.querySelectorAll('li');
+                        items.forEach(item => {
+                            docContent += `<p>• ${item.textContent.trim()}</p>\n`;
+                        });
+                    } else {
+                        // Handle paragraphs (fallback messages)
+                        const para = section.querySelector('p');
+                        if (para) {
+                            docContent += `<p>${para.textContent.trim()}</p>\n`;
+                        }
+                    }
+                    docContent += "\n"; // Add space between sections
+                });
+                // 3. Footer Note
+                const footerNote = tempDiv.querySelector('div[style*="font-size"]');
+                if (footerNote) {
+                    docContent += `<p><em>${footerNote.textContent.trim()}</em></p>\n`;
+                }
+                // --- Generate DOCX Blob ---
+                const { Document, Paragraph, TextRun, HeadingLevel } = window.docx; // Assuming docx.js is loaded
+                if (!Document || !Paragraph || !TextRun || !HeadingLevel) {
+                    throw new Error("docx.js library not loaded. Falling back to plain text download.");
+                }
+                const doc = new Document({
+                    sections: [{
+                        properties: {},
+                        children: [
+                            new Paragraph({
+                                text: header ? header.textContent.replace(/\s*✅\s*/, '').replace(/\s*AI Analysis\s*/i, '').trim() : "Enhanced Meeting Notes",
+                                heading: HeadingLevel.HEADING_1,
+                            }),
+                            ...Array.from(sections).flatMap(section => {
+                                const sectionHeader = section.querySelector('h4');
+                                const list = section.querySelector('ul');
+                                const paras = section.querySelectorAll('p:not([style*="font-size"])'); // Exclude footer note
+                                let sectionChildren = [];
+                                if (sectionHeader) {
+                                    sectionChildren.push(
+                                        new Paragraph({
+                                            text: sectionHeader.textContent.trim(),
+                                            heading: HeadingLevel.HEADING_2,
+                                        })
+                                    );
+                                }
+                                if (list) {
+                                    const items = list.querySelectorAll('li');
+                                    items.forEach(item => {
+                                        sectionChildren.push(
+                                            new Paragraph({
+                                                children: [
+                                                    new TextRun("• "),
+                                                    new TextRun(item.textContent.trim()),
+                                                ],
+                                            })
+                                        );
+                                    });
+                                } else if (paras.length > 0) {
+                                    // Handle paragraphs (fallback messages)
+                                    paras.forEach(p => {
+                                        if (p.textContent.trim()) {
+                                            sectionChildren.push(
+                                                new Paragraph({
+                                                    text: p.textContent.trim(),
+                                                })
+                                            );
+                                        }
+                                    });
+                                }
+                                // Add a blank paragraph for spacing between sections
+                                sectionChildren.push(new Paragraph({}));
+                                return sectionChildren;
+                            }),
+                            // Footer Note
+                            ...(footerNote ? [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: footerNote.textContent.trim(),
+                                            italics: true,
+                                        }),
+                                    ],
+                                })
+                            ] : [])
+                        ],
+                    }],
+                });
+                // --- Trigger Download ---
+                window.docx.Packer.toBlob(doc).then(blob => {
+                    const fileName = `Enhanced_Meeting_Notes_${new Date().toISOString().slice(0, 10)}.docx`;
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }).catch(err => {
+                    console.error('DOCX Generation Error:', err);
+                    alert('Failed to generate Word file. Downloading as plain text instead.');
+                    downloadPlainText(docContent, 'Enhanced_Meeting_Notes.txt');
+                });
+            } catch (err) {
+                console.error('Export Error:', err);
+                // Fallback: Download as plain text if DOCX fails
+                alert('Exporting as plain text due to an error.');
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                const textToCopy = tempDiv.textContent || tempDiv.innerText || "";
+                downloadPlainText(textToCopy, 'Enhanced_Meeting_Notes.txt');
+            }
+        };
+    }
+    // --- Fallback Plain Text Download ---
+    function downloadPlainText(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+    // --- End of Export to Word Functionality ---
+    // --- SIGNIFICANTLY IMPROVED Fallback parsing (mode-aware) ---
+    function generateImprovedFallbackParsing(input) {
+        const lines = input.split('\n').filter(line => line.trim());
+        const fullText = lines.join(' ');
+        // --- Mode-specific logic ---
+        if (currentMode === 'meeting') {
+            // --- MEETING MODE FALLBACK LOGIC (Same as before) ---
+            let objective = "The main goal of the meeting could not be automatically determined from the notes.";
+            for (let i = 0; i < Math.min(3, lines.length); i++) {
+                const lowerLine = lines[i].toLowerCase();
+                if (lowerLine.includes('sync') || lowerLine.includes('meeting') || lowerLine.includes('review') || lowerLine.includes('discuss') || lowerLine.includes('plan')) {
+                    objective = `The main topic of this meeting was: ${lines[i].trim()}`;
+                    break;
+                }
+            }
+            lines.forEach(line => {
+                if (line.toLowerCase().includes('agenda')) {
+                     objective = `The meeting's agenda/purpose was: ${line.split(':').pop().trim()}`;
+                }
+            });
+            const discussionPoints = [];
+            const topicKeywords = {
+                'Onboarding': ['onboarding', 'sign-up', 'user flow'],
+                'Marketing Launch': ['marketing', 'launch', 'campaign', 'target'],
+                'Product Development': ['product', 'feature', 'development', 'build', 'dev', 'flow'],
+                'Design': ['design', 'wireframe', 'mockup', 'layout', 'dashboard'],
+                'Content': ['blog', 'content', 'post'],
+                'Budget/Finance': ['budget', 'finance', 'approved', 'extra', 'ads', 'cost'],
+                'Blockers/Issues': ['blockers', 'blocker', 'slow', 'issue', 'stuck', 'problem'],
+                'Status/Progress': ['percent done', 'complete', 'status', 'review'],
+                'Next Steps/Future': ['next meeting', 'plan is', 'will be']
+            };
+            for (const [topic, keywords] of Object.entries(topicKeywords)) {
+                let foundLines = [];
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (keywords.some(kw => lowerLine.includes(kw))) {
+                        foundLines.push(line.trim());
+                    }
+                });
+                if (foundLines.length > 0) {
+                    // Combine found lines into one point, or take the first one if multiple are too varied.
+                    // A simple heuristic: if one line is much longer and contains others, use it.
+                    let bestLine = foundLines[0];
+                    if (foundLines.length > 1) {
+                        const combined = foundLines.join('. ');
+                        if (combined.length < 200) { // If short enough, combine
+                            bestLine = combined;
+                        } else { // Otherwise, pick the most informative one (longest, or one with a date)
+                            bestLine = foundLines.reduce((prev, current) => (current.length > prev.length) ? current : prev);
+                        }
+                    }
+                    // Basic capitalization and punctuation
+                    let point = bestLine.charAt(0).toUpperCase() + bestLine.slice(1).replace(/[.!?]+$/, '') + '.';
+                    discussionPoints.push(`${topic}: ${point}`);
+                }
+            }
+            const assignedTasks = [];
+            const personNames = new Set();
+            // --- Robust Name Finding ---
+            lines.forEach(line => {
+                if (line.toLowerCase().includes('attendees')) {
+                    const potentialNames = line.split(/[:,]/).pop().split(/[ ,]+/).map(w => w.trim()).filter(w => w.length > 1 && !/^\d+$/.test(w) && !/^[^\w]+$/.test(w));
+                    potentialNames.forEach(name => {
+                        const lowerName = name.toLowerCase();
+                        if (!['pm', 'marketing', 'dev', 'design', 'content', 'lead', 'manager', 'director', 'team'].includes(lowerName)) {
+                            const capName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                            personNames.add(capName);
+                        }
+                    });
+                }
+            });
+            lines.forEach(line => {
+                const parenMatches = line.match(/\b(\w+)\s*$(\w+)$/g); // e.g., "Rachel PM"
+                if (parenMatches) {
+                    parenMatches.forEach(match => {
+                        const parts = match.slice(0, -1).split(' '); // Remove ')' and split
+                        const potentialName = parts[0];
+                        const lowerName = potentialName.toLowerCase();
+                        if (potentialName && potentialName.length > 1 && !['pm', 'marketing', 'dev', 'design', 'content', 'lead', 'manager', 'director', 'team'].includes(lowerName)) {
+                            const capName = potentialName.charAt(0).toUpperCase() + potentialName.slice(1).toLowerCase();
+                            personNames.add(capName);
+                        }
+                    });
+                }
+                const parenMatches2 = line.match(/\((\w+)\)/g); // e.g., "(Sam)"
+                if (parenMatches2) {
+                    parenMatches2.forEach(match => {
+                        const name = match.slice(1, -1); // Remove parentheses
+                        const lowerName = name.toLowerCase();
+                        if (name && name.length > 1 && !['pm', 'marketing', 'dev', 'design', 'content', 'lead', 'manager', 'director', 'team'].includes(lowerName)) {
+                            const capName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                            personNames.add(capName);
+                        }
+                    });
+                }
+            });
+            const personNameArray = Array.from(personNames);
+            console.log("Found Names (Fallback):", personNameArray);
+            // --- Action Item Extraction ---
+            const actionVerbs = ['build', 'needs', 'review', 'revise', 'coordinate', 'finalize', 'update', 'provide', 'share', 'send', 'discuss', 'plan', 'implement', 'create', 'draft', 'work on', 'handle', 'get', 'deliver', 'talk to', 'revise'];
+            const datePattern = /by\s+([A-Za-z]+\s+\d+)/i;
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                let assignedPerson = null;
+                let taskPhrase = "";
+                let dateString = "";
+                for (const person of personNameArray) {
+                    if (line.includes(person)) {
+                        assignedPerson = person;
+                        break;
+                    }
+                }
+                if (!assignedPerson) {
+                     const simpleStatusMatch = line.match(/^([\w\s]+)\s+(\d+%)\s+(?:done|complete)\s+(\w+)/i);
+                     if (simpleStatusMatch) {
+                         const task = simpleStatusMatch[1].trim();
+                         const percent = simpleStatusMatch[2];
+                         const personRaw = simpleStatusMatch[3];
+                         const lowerPersonRaw = personRaw.toLowerCase();
+                         if (personRaw.length > 1 && !['pm', 'marketing', 'dev', 'design', 'content', 'lead', 'manager', 'director', 'team'].includes(lowerPersonRaw)) {
+                             const capPerson = personRaw.charAt(0).toUpperCase() + personRaw.slice(1).toLowerCase();
+                             assignedTasks.push(`${task} (${percent} complete) - ${capPerson}`);
+                         } else {
+                              assignedTasks.push(`${task} (${percent} complete)`);
+                         }
+                     }
+                     return;
+                }
+                let verbIndex = -1;
+                let foundVerb = "";
+                for (const verb of actionVerbs) {
+                    const index = lowerLine.indexOf(verb);
+                    if (index !== -1 && (verbIndex === -1 || index < verbIndex)) {
+                        verbIndex = index;
+                        foundVerb = verb;
+                    }
+                }
+                if (foundVerb) {
+                    const verbStartIndex = lowerLine.indexOf(foundVerb);
+                    let potentialStart = Math.max(0, verbStartIndex - 20);
+                    let contextBeforeVerb = line.substring(potentialStart, verbStartIndex).trim();
+                    if (!contextBeforeVerb.includes(assignedPerson)) {
+                        taskPhrase = contextBeforeVerb + ' ' + line.substring(verbStartIndex);
+                    } else {
+                        taskPhrase = line.substring(verbStartIndex);
+                    }
+                    const dateMatch = line.match(datePattern);
+                    if (dateMatch) {
+                        dateString = ` (Due: ${dateMatch[1]})`;
+                        // Remove date part from task phrase for cleaner display if possible
+                        taskPhrase = taskPhrase.replace(datePattern, '').replace(/[.!?]+$/, '').trim();
+                    } else {
+                         taskPhrase = taskPhrase.replace(/[.!?]+$/, '').trim();
+                    }
+                    // Final cleanup: remove leading verb if it's at the start of taskPhrase
+                    if (taskPhrase.toLowerCase().startsWith(foundVerb)) {
+                        taskPhrase = taskPhrase.substring(foundVerb.length).trim();
+                    }
+                    if (taskPhrase) {
+                        taskPhrase = taskPhrase.charAt(0).toUpperCase() + taskPhrase.slice(1).toLowerCase();
+                        assignedTasks.push(`${foundVerb} ${taskPhrase} - ${assignedPerson}${dateString}`);
+                    }
+                } else {
+                    // Handle constructions like "Person will do X" or "Person to do X"
+                    if (lowerLine.includes('will') || lowerLine.includes('to')) {
+                         const personIndex = line.indexOf(assignedPerson);
+                         if (personIndex !== -1) {
+                             const postPersonText = line.substring(personIndex + assignedPerson.length).trim();
+                             if (postPersonText) {
+                                 const capTask = postPersonText.charAt(0).toUpperCase() + postPersonText.slice(1).replace(/[.!?]+$/, '').trim();
+                                 assignedTasks.push(`${capTask} - ${assignedPerson}`);
+                             }
+                         }
+                    }
+                }
+            });
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                if (lowerLine.includes('waiting for') || lowerLine.includes('waiting')) {
+                    const parts = line.split(' from ');
+                    if (parts.length > 1) {
+                        const itemStartIndex = lowerLine.indexOf('waiting');
+                        const fromIndex = lowerLine.indexOf(' from ');
+                        let itemPart = "";
+                        if (itemStartIndex !== -1 && fromIndex !== -1) {
+                            itemPart = line.substring(itemStartIndex, fromIndex).replace(/^waiting\s*(for)?/i, '').trim();
+                        } else {
+                            itemPart = parts[0].split(' ').slice(-4).join(' ');
+                        }
+                        const personPartRaw = parts[1].split(' ')[0].replace(/[.!?]+$/, '');
+                        const lowerPersonRaw = personPartRaw.toLowerCase();
+                        if (personPartRaw.length > 1 && !['pm', 'marketing', 'dev', 'design', 'content', 'lead', 'manager', 'director', 'team'].includes(lowerPersonRaw)) {
+                            const capPerson = personPartRaw.charAt(0).toUpperCase() + personPartRaw.slice(1).toLowerCase();
+                            const capItem = itemPart.charAt(0).toUpperCase() + itemPart.slice(1);
+                            assignedTasks.push(`Provide ${capItem} - ${capPerson}`);
+                        } else {
+                             assignedTasks.push(`Provide ${itemPart} - [Requested from: ${personPartRaw}]`);
+                        }
+                    }
+                }
+            });
+            const importantFacts = [];
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                let isKeyPoint = false;
+                let pointText = line.trim();
+                if (lowerLine.includes('approved') || lowerLine.includes('budget') || lowerLine.includes('extra')) {
+                    isKeyPoint = true;
+                    pointText = `✅ Approved: ${line.trim()}`;
+                }
+                if (lowerLine.includes('blockers') || lowerLine.includes('blocker') || lowerLine.includes('slow') || lowerLine.includes('issue')) {
+                    isKeyPoint = true;
+                    if (lowerLine.includes('blockers')) {
+                        pointText = `⚠️ Blockers: ${line.split(':').pop().trim()}`;
+                    } else {
+                        pointText = `⚠️ Issue noted: ${line.trim()}`;
+                    }
+                }
+                if (lowerLine.includes('percent done') || lowerLine.includes('status') || lowerLine.includes('complete')) {
+                    isKeyPoint = true;
+                    pointText = `📊 Status: ${line.trim()}`;
+                }
+                if (lowerLine.includes('plan') && (lowerLine.includes('step') || lowerLine.includes('flow'))) {
+                     isKeyPoint = true;
+                     pointText = `📝 Plan/Decision: ${line.trim()}`;
+                }
+                if (lowerLine.includes('next meeting')) {
+                    isKeyPoint = true;
+                    pointText = `🗓️ Next Step: ${line.trim()}`;
+                }
+                if (isKeyPoint) {
+                    importantFacts.push(pointText);
+                }
+            });
+            let fallbackOutput = `
+              <div class="success-header"> ✅ Meeting Notes Analyzed <span class="fallback-tag">Local Analysis</span> </div>
+              <div class="result-section"> <h4>🎯 Meeting Objective</h4> <div><p>${objective}</p></div> </div>
+            `;
+            fallbackOutput += `
+              <div class="result-section">
+                <h4>📌 Key Discussion Points & Outcomes</h4>
+                <div>${discussionPoints.length > 0 ? '<ul>' + discussionPoints.map(item => `<li>${item}</li>`).join('') + '</ul>' : '<p><em>Key points could not be automatically summarized.</em></p>'}</div>
+              </div>
+            `;
+            fallbackOutput += `
+              <div class="result-section">
+                <h4>✅ Assigned Tasks</h4>
+                <div>${assignedTasks.length > 0 ? '<ul>' + assignedTasks.map(item => `<li>${item}</li>`).join('') + '</ul>' : '<p><em>No clear tasks could be identified automatically.</em></p>'}</div>
+              </div>
+            `;
+            fallbackOutput += `
+              <div class="result-section">
+                <h4>📋 Important Facts/Decisions</h4>
+                <div>${importantFacts.length > 0 ? '<ul>' + importantFacts.map(point => `<li>${point}</li>`).join('') + '</ul>' : '<p><em>No specific facts or decisions could be automatically extracted.</em></p>'}</div>
+              </div>
+            `;
+            fallbackOutput += `
+              <div style="font-size: 0.85rem; color: #7f8c8d; margin-top: 25px; text-align: center;">
+                <em>Note: This analysis is derived directly from your provided notes using local processing.</em>
+              </div>
+            `;
+            return fallbackOutput;
+        } else {
+            // --- NORMAL NOTES MODE FALLBACK LOGIC ---
+            // This logic now focuses on splitting long paragraphs into bullet points.
+            let mainTopic = "Main topic could not be automatically determined.";
+            // Heuristic: Find the first line that looks like a title or main heading
+            for (let i = 0; i < Math.min(2, lines.length); i++) {
+                const line = lines[i].trim();
+                // Simple check: if it's not a list item and not too long, treat as topic
+                if (!line.startsWith('-') && !line.startsWith('*') && line.length < 100) {
+                     mainTopic = line;
+                     break;
+                }
+            }
+            const keyPoints = [];
+            const definitions = [];
+            lines.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                // Simple definition pattern: Term: Definition
+                const defMatch = line.match(/^([A-Za-z\s\-]+?):\s*(.+)$/);
+                if (defMatch) {
+                    const term = defMatch[1].trim();
+                    const def = defMatch[2].trim();
+                    if (term && def) {
+                        definitions.push(`<strong>${term}:</strong> ${def}`);
+                    }
+                } else {
+                    // For non-definition lines, add them as key points
+                    const trimmedLine = line.trim();
+                    if (trimmedLine && !trimmedLine.startsWith('-') && !trimmedLine.startsWith('*')) {
+                        keyPoints.push(trimmedLine);
+                    }
+                }
+            });
+            // --- IMPROVED LOGIC FOR SPLITTING LONG PARAGRAPHS ---
+            const finalBulletPoints = [];
+            keyPoints.forEach(point => {
+                // Define a reasonable max length for a single bullet point
+                const maxLength = 150;
+                if (point.length > maxLength) {
+                    // If the point is too long, try to split it.
+                    // Simple sentence splitting based on periods.
+                    const sentences = point.split(/(?<=\.)\s+/); // Split after a period followed by whitespace
+                    let currentBullet = "";
+                    sentences.forEach(sentence => {
+                        // Check if adding the next sentence would exceed the limit
+                        if ((currentBullet + " " + sentence).trim().length > maxLength && currentBullet) {
+                            // If yes, and we have content in currentBullet, push it as a bullet
+                            finalBulletPoints.push(currentBullet.trim());
+                            currentBullet = sentence.trim();
+                        } else {
+                            // Otherwise, append the sentence
+                            currentBullet = (currentBullet + " " + sentence).trim();
+                        }
+                    });
+                    // Don't forget the last accumulated content
+                    if (currentBullet) {
+                        finalBulletPoints.push(currentBullet.trim());
+                    }
+                } else {
+                    // If the point is short enough, add it directly
+                    finalBulletPoints.push(point);
+                }
+            });
+            // --- END OF IMPROVED SPLITTING LOGIC ---
+            // --- Format Fallback Output ---
+            let fallbackOutput = `
+              <div class="success-header"> ✅ Normal Notes Analyzed <span class="fallback-tag">Local Analysis</span> </div>
+              <div class="result-section"> <h4>📚 Main Topic</h4> <div><p>${mainTopic}</p></div> </div>
+            `;
+            fallbackOutput += `
+              <div class="result-section">
+                <h4>📌 Key Points</h4>
+                <div>${finalBulletPoints.length > 0 ? '<ul>' + finalBulletPoints.map(item => `<li>${item}</li>`).join('') + '</ul>' : '<p><em>Key points could not be automatically summarized.</em></p>'}</div>
+              </div>
+            `;
+            fallbackOutput += `
+              <div class="result-section">
+                <h4>📖 Definitions/Terms</h4>
+                <div>${definitions.length > 0 ? '<ul>' + definitions.map(item => `<li>${item}</li>`).join('') + '</ul>' : '<p><em>No definitions or terms could be automatically extracted.</em></p>'}</div>
+              </div>
+            `;
+            fallbackOutput += `
+              <div style="font-size: 0.85rem; color: #7f8c8d; margin-top: 25px; text-align: center;">
+                <em>Note: This analysis is derived directly from your provided notes using local processing.</em>
+              </div>
+            `;
+            return fallbackOutput;
+        }
+    }
+  </script>
+</body>
+</html>
