@@ -449,10 +449,10 @@ ${input}`;
           let finalHTMLContent = "";
           let providerUsed = result.provider;
           if (currentMode === 'meeting') {
-            parsedData = parseAIMeetingResponse(result.data);
+            parsedData = parseAIMeetingResponse(result.result);
             finalHTMLContent = formatAIMeetingResults(parsedData, providerUsed);
           } else { // Normal Notes mode
-            parsedData = parseAINormalResponse(result.data);
+            parsedData = parseAINormalResponse(result.result);
             finalHTMLContent = formatAINormalResults(parsedData, providerUsed);
           }
           output.innerHTML = finalHTMLContent;
@@ -464,11 +464,11 @@ ${input}`;
         } catch (error) {
           console.error('AI Parsing error:', error);
           // Show raw output if parsing fails
-          output.innerHTML = `<div class="error">❌ Error parsing the response from ${result.provider}. Showing raw output:</div><pre style="white-space: pre-wrap; background: #f0f0f0; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">${result.data}</pre>`;
+          output.innerHTML = `<div class="error">❌ Error parsing the response from ${result.provider}. Showing raw output:</div><pre style="white-space: pre-wrap; background: #f0f0f0; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">${result.result}</pre>`;
           copyBtn.style.display = 'block'; // Show button even if parsing fails (to copy raw output)
           exportBtn.style.display = 'block'; // Show export button even if parsing fails (to export raw output)
-          setupCopyButton(`<pre>${result.data}</pre>`);
-          setupExportButton(`<pre>${result.data}</pre>`); // Setup export for raw output
+          setupCopyButton(`<pre>${result.result}</pre>`);
+          setupExportButton(`<pre>${result.result}</pre>`); // Setup export for raw output
           return;
         }
       } else {
