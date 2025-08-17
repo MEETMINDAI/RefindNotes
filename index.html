@@ -776,14 +776,22 @@
         if (signinBtn) {
             signinBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                const useMagic = confirm('Use magic link sign-in (no password)?\nOK = Magic link, Cancel = Password');
                 const email = prompt('Email:');
-                const password = prompt('Password:');
-                if (!email || !password) return;
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert(error.message);
+                if (!email) return;
+                if (useMagic) {
+                    const { error } = await supabaseClient.auth.signInWithOtp({
+                        email,
+                        options: { emailRedirectTo: 'https://refindnotes4.netlify.app' }
+                    });
+                    if (error) { alert(error.message); return; }
+                    alert('Magic link sent. Check your email.');
                     return;
                 }
+                const password = prompt('Password:');
+                if (!password) return;
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { alert(error.message); return; }
                 // UI will update via onAuthStateChange
             });
         } else {
@@ -793,16 +801,23 @@
         if (signupBtn) {
             signupBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                const useMagic = confirm('Use magic link sign-up (no password)?\nOK = Magic link, Cancel = Email+Password');
                 const email = prompt('Email:');
-                const password = prompt('Password (min 6 chars):');
-                if (!email || !password) return;
-                const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                if (error) {
-                    alert(error.message);
+                if (!email) return;
+                if (useMagic) {
+                    const { error } = await supabaseClient.auth.signInWithOtp({
+                        email,
+                        options: { emailRedirectTo: 'https://refindnotes4.netlify.app' }
+                    });
+                    if (error) { alert(error.message); return; }
+                    alert('Magic link sent. Check your email.');
                     return;
                 }
+                const password = prompt('Password (min 6 chars):');
+                if (!password) return;
+                const { error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) { alert(error.message); return; }
                 alert('Check your email to confirm your account.');
-                // UI will update after confirmation and sign-in
             });
         } else {
             console.error("Sign Up button not found in DOM.");
