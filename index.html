@@ -470,8 +470,8 @@
                     <div class="auth-buttons" id="authButtons">
                         <!-- These links will redirect to Supabase's hosted auth UI -->
                         <!-- IMPORTANT: Replace YOUR_NETLIFY_DOMAIN.netlify.app with your actual Netlify subdomain -->
-                        <a href="https://oohtgfmkwdpvhfkietwp.supabase.co/auth/v1/authorize?provider=email&redirect_to=https://YOUR_NETLIFY_DOMAIN.netlify.app" class="auth-btn" id="signinBtn">Sign In</a>
-                        <a href="https://oohtgfmkwdpvhfkietwp.supabase.co/auth/v1/authorize?provider=email&redirect_to=https://YOUR_NETLIFY_DOMAIN.netlify.app&screen_hint=signup" class="auth-btn" id="signupBtn">Sign Up</a>
+                        <a href="#" class="auth-btn" id="signinBtn">Sign In</a>
+                        <a href="#" class="auth-btn" id="signupBtn">Sign Up</a>
                     </div>
                     <div class="user-info" id="userInfo" style="display: none;">
                         <div class="user-avatar" id="userAvatar">U</div>
@@ -774,16 +774,35 @@
         }
 
         if (signinBtn) {
-            signinBtn.addEventListener('click', () => {
-                console.log("Sign In button clicked.");
+            signinBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = prompt('Email:');
+                const password = prompt('Password:');
+                if (!email || !password) return;
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert(error.message);
+                    return;
+                }
+                // UI will update via onAuthStateChange
             });
         } else {
             console.error("Sign In button not found in DOM.");
         }
 
         if (signupBtn) {
-            signupBtn.addEventListener('click', () => {
-                console.log("Sign Up button clicked.");
+            signupBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = prompt('Email:');
+                const password = prompt('Password (min 6 chars):');
+                if (!email || !password) return;
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) {
+                    alert(error.message);
+                    return;
+                }
+                alert('Check your email to confirm your account.');
+                // UI will update after confirmation and sign-in
             });
         } else {
             console.error("Sign Up button not found in DOM.");
