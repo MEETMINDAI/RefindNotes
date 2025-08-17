@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RefindNotes - AI Note Cleaner</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
@@ -44,12 +45,6 @@
             padding: 20px 0;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
         .logo {
             font-size: 24px;
             font-weight: 700;
@@ -61,10 +56,32 @@
             color: #f8fafc;
         }
 
-        .auth-buttons {
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #38bdf8;
+        }
+
+        .auth-section {
             display: flex;
             gap: 15px;
             align-items: center;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
         }
 
         .auth-btn {
@@ -77,7 +94,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             font-size: 16px;
         }
 
@@ -113,7 +130,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             font-size: 16px;
         }
 
@@ -122,47 +139,25 @@
             color: #ef4444;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .nav-links a {
+        .privacy-policy-link {
             color: #cbd5e1;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
+            margin-left: 20px;
+            font-size: 0.9rem;
         }
 
-        .nav-links a:hover {
+        .privacy-policy-link:hover {
             color: #38bdf8;
-        }
-
-        .clean-btn {
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .clean-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+            text-decoration: underline;
         }
 
         /* Hero Section */
         .hero {
             padding: 160px 0 100px;
             text-align: center;
-            margin-top: 80px;
+            margin-top: 80px; /* Adjusted for fixed header */
         }
 
         .hero h1 {
@@ -173,7 +168,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: white;
+            color: white; /* Fallback */
         }
 
         .hero p {
@@ -204,7 +199,7 @@
         /* Features Section */
         .features {
             padding: 100px 0;
-            background-color: inherit;
+            background-color: inherit; /* Removed gray background */
         }
 
         .section-title {
@@ -255,6 +250,10 @@
         /* How It Works */
         .how-it-works {
             padding: 100px 0;
+            background-color: #1e293b; /* Added background */
+            border-radius: 15px; /* Added border radius */
+            margin: 50px 0; /* Added margin for spacing */
+            padding: 40px; /* Added padding */
         }
 
         .steps {
@@ -295,26 +294,105 @@
             font-size: 1.1rem;
         }
 
-        /* Auth Modal */
+        /* Footer */
+        footer {
+            background-color: rgba(15, 23, 42, 0.9);
+            padding: 50px 0 30px;
+            border-top: 1px solid rgba(148, 163, 184, 0.2);
+            margin-top: 100px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .footer-logo {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .footer-logo a {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo p {
+            color: #94a3b8;
+            max-width: 300px;
+        }
+
+        .footer-links {
+            flex: 2;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .footer-column {
+            min-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .footer-column h4 {
+            color: #f8fafc;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-column ul li a:hover {
+            color: #38bdf8;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Privacy Policy Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 2001;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 2000;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
         }
 
         .modal-content {
-            background: #1e293b;
+            background-color: #1e293b;
             margin: 10% auto;
             padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            color: #f8fafc;
             border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
@@ -327,81 +405,19 @@
             line-height: 1;
         }
 
-        .close:hover {
+        .close:hover,
+        .close:focus {
             color: #fff;
         }
 
-        .modal h2 {
+        .modal-content h2 {
             margin-bottom: 20px;
-            color: #f8fafc;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #cbd5e1;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: #f8fafc;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #38bdf8;
-        }
-
-        .form-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .form-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-        }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 20px;
-            color: #94a3b8;
-        }
-
-        .switch-form a {
             color: #38bdf8;
-            text-decoration: none;
-            cursor: pointer;
         }
 
-        .switch-form a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            color: #f87171;
-            background: rgba(248, 113, 113, 0.1);
-            padding: 10px;
-            border-radius: 5px;
+        .modal-content p {
             margin-bottom: 15px;
-            display: none;
+            line-height: 1.6;
         }
 
         /* Responsive Design */
@@ -415,7 +431,7 @@
             }
 
             .nav-links {
-                gap: 15px;
+                display: none;
             }
 
             .steps {
@@ -426,11 +442,11 @@
             .step {
                 margin-bottom: 40px;
             }
-            
-            .auth-buttons {
+
+            .auth-section {
                 gap: 10px;
             }
-            
+
             .auth-btn, .logout-btn {
                 padding: 6px 12px;
                 font-size: 14px;
@@ -443,22 +459,25 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <div class="logo-container">
-                    <a href="index.html" class="logo">Refind<span>Notes</span></a>
+                <a href="index.html" class="logo">Refind<span>Notes</span></a>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#more">More</a>
+                    <a href="cleaner.html" class="cta-button">Clean your notes</a>
+                </div>
+                <div class="auth-section">
                     <div class="auth-buttons" id="authButtons">
-                        <button class="auth-btn" id="signinBtn">Sign In</button>
-                        <button class="auth-btn" id="signupBtn">Sign Up</button>
+                        <!-- These links will redirect to Supabase's hosted auth UI -->
+                        <!-- IMPORTANT: Replace YOUR_NETLIFY_DOMAIN.netlify.app with your actual Netlify subdomain -->
+                        <a href="https://oohtgfmkwdpvhfkietwp.supabase.co/auth/v1/authorize?provider=email&redirect_to=https://YOUR_NETLIFY_DOMAIN.netlify.app" class="auth-btn" id="signinBtn">Sign In</a>
+                        <a href="https://oohtgfmkwdpvhfkietwp.supabase.co/auth/v1/authorize?provider=email&redirect_to=https://YOUR_NETLIFY_DOMAIN.netlify.app&screen_hint=signup" class="auth-btn" id="signupBtn">Sign Up</a>
                     </div>
                     <div class="user-info" id="userInfo" style="display: none;">
                         <div class="user-avatar" id="userAvatar">U</div>
                         <button class="logout-btn" id="logoutBtn">Logout</button>
                     </div>
-                </div>
-                <div class="nav-links">
-                    <a href="index.html">Home</a>
-                    <a href="#about">About</a>
-                    <a href="#more">More</a>
-                    <a href="cleaner.html" class="clean-btn">Clean your notes</a>
+                    <a href="#" class="privacy-policy-link" id="privacyPolicyLink">Privacy Policy</a>
                 </div>
             </nav>
         </div>
@@ -523,167 +542,275 @@
         </div>
     </section>
 
-    <!-- Auth Modal -->
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modalTitle">Sign In</h2>
-            <div class="error-message" id="errorMessage"></div>
-            <form id="authForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html">RefindNotes</a>
+                    <p>Transforming chaotic thoughts into clear, actionable insights.</p>
                 </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Pricing</a></li>
+                            <li><a href="#">Templates</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="#">About</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <ul>
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">Community</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <button type="submit" class="form-btn" id="submitBtn">Sign In</button>
-            </form>
-            <div class="switch-form">
-                <span id="switchText">Don't have an account? <a id="switchLink">Sign Up</a></span>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 RefindNotes. All rights reserved.</p>
             </div>
         </div>
+    </footer>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyPolicyModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Privacy Policy</h2>
+            <p><strong>Last Updated:</strong> November 27, 2024</p>
+
+            <p>Your privacy is critically important to us. At RefindNotes, we are committed to protecting your personal information and your right to privacy.</p>
+
+            <h3>Information We Collect</h3>
+            <p>We collect information you provide directly to us when you register for an account, sign in, or communicate with us. This may include your name and email address.</p>
+            <p>We also collect information automatically when you use our service, browser type, operating system, and referring URLs.</p>
+
+            <h3>How We Use Information</h3>
+            <p>We use the information we collect to provide, maintain, and improve our services; to process transactions; to send you technical notices and support messages; and to communicate with you about products, services, offers, and events.</p>
+
+            <h3>Data Security</h3>
+            <p>We implement robust security measures designed to protect your information from unauthorized access, alteration, disclosure, or destruction. These include encrypted connections (HTTPS), secure server infrastructure, and access controls.</p>
+
+            <h3>Data Sharing and Disclosure</h3>
+            <p>We do not sell, trade, or otherwise transfer your personally identifiable information to outside parties. This does not include trusted third parties who assist us in operating our website, conducting our business, or servicing you, so long as those parties agree to keep this information confidential.</p>
+            <p>We may also release information when we believe release is appropriate to comply with the law, enforce our site policies, or protect ours or others' rights, property, or safety.</p>
+
+            <h3>Your Data Rights</h3>
+            <p>You have the right to access, update, or delete your personal information. You can usually do this yourself through your account settings or by contacting us directly.</p>
+
+            <h3>Data Retention</h3>
+            <p>We retain your information for as long as necessary to fulfill the purposes outlined in this policy, unless a longer retention period is required or permitted by law.</p>
+
+            <h3>Children's Privacy</h3>
+            <p>Our service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.</p>
+
+            <h3>Changes to Our Privacy Policy</h3>
+            <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.</p>
+
+            <h3>Contact Us</h3>
+            <p>If you have questions or comments about this policy, please contact us at: <a href="mailto:support@refindnotes.com" style="color: #38bdf8;">support@refindnotes.com</a></p>
+
+            <p>By using RefindNotes, you signify your acceptance of this policy. If you do not agree to this policy, please do not use our service.</p>
+        </div>
     </div>
+    <!-- End Privacy Policy Modal -->
 
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://oohtgfmkwdpvhfkietwp.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vaHRnZm1rd2Rwdmhma2lldHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxOTU0ODQsImV4cCI6MjA3MDc3MTQ4NH0.NWcyZIa0fz_oheffQm0DJuRsQ2DE1cjUfZUra3FtDVU';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // --- CRITICAL: Initialize Supabase Client ---
+        // IMPORTANT: Make sure these credentials are EXACTLY correct!
+        const SUPABASE_URL = 'https://oohtgfmkwdpvhfkietwp.supabase.co';
+        // Use your PUBLIC (Anon) key, NOT the secret key!
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vaHRnZm1rd2Rwdmhma2lldHdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxOTU0ODQsImV4cCI6MjA3MDc3MTQ4NH0.NWcyZIa0fz_oheffQm0DJuRsQ2DE1cjUfZUra3FtDVU';
+        
+        // CORRECT way to initialize Supabase client using the global 'supabase' object from the CDN
+        let supabaseClient;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log("✅ Supabase client initialized successfully:", supabaseClient);
+        } catch (initError) {
+            console.error("❌ Critical Error: Failed to initialize Supabase client:", initError);
+            // Fallback UI if Supabase fails to initialize
+            document.getElementById('authButtons').innerHTML = '<p style="color: #f87171;">⚠️ Auth temporarily unavailable. Please try again later.</p>';
+        }
 
-        // DOM Elements
+        // --- DOM Elements ---
         const authButtons = document.getElementById('authButtons');
         const userInfo = document.getElementById('userInfo');
         const userAvatar = document.getElementById('userAvatar');
         const signinBtn = document.getElementById('signinBtn');
         const signupBtn = document.getElementById('signupBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const authModal = document.getElementById('authModal');
-        const closeModal = document.querySelector('.close');
-        const modalTitle = document.getElementById('modalTitle');
-        const authForm = document.getElementById('authForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const submitBtn = document.getElementById('submitBtn');
-        const errorMessage = document.getElementById('errorMessage');
+        const privacyPolicyLink = document.getElementById('privacyPolicyLink');
+        const privacyPolicyModal = document.getElementById('privacyPolicyModal');
+        const closeModal = document.querySelector('.close'); // Assumes the close button is the first .close element
 
-        // State
-        let isSignUp = false;
+        // --- Authentication Logic ---
 
-        // Check user session on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                showUser(session.user);
-            } else {
-                showAuthButtons();
-            }
-        });
-
-        // Auth Event Listener
-        supabase.auth.onAuthStateChange((_event, session) => {
-            if (session) {
-                showUser(session.user);
-            } else {
-                showAuthButtons();
-            }
-        });
-
-        // Show user info
+        // Function to show user information
         function showUser(user) {
+            if (!user || !user.email) {
+                console.warn("showUser called without a valid user object or email.");
+                return;
+            }
             const email = user.email;
             const initials = email.charAt(0).toUpperCase();
             userAvatar.textContent = initials;
             authButtons.style.display = 'none';
             userInfo.style.display = 'flex';
+            console.log("✅ UI Updated: Showing user", email);
         }
 
-        // Show auth buttons
+        // Function to show authentication buttons
         function showAuthButtons() {
             userInfo.style.display = 'none';
             authButtons.style.display = 'flex';
+            console.log("✅ UI Updated: Showing auth buttons");
         }
 
-        // Open modal
-        function openModal(isSignUpMode = false) {
-            isSignUp = isSignUpMode;
-            modalTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+        // --- Event Listeners ---
+
+        // Check user session when the page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("📄 DOM fully loaded and parsed. Checking initial Supabase session...");
             
-            // Update switch text
-            document.getElementById('switchText').innerHTML = isSignUp 
-                ? 'Already have an account? <a id="switchLink">Sign In</a>' 
-                : 'Don\'t have an account? <a id="switchLink">Sign Up</a>';
-            
-            // Attach event listener to the switch link
-            document.getElementById('switchLink').addEventListener('click', toggleForm);
-            
-            errorMessage.style.display = 'none';
-            authModal.style.display = 'block';
-        }
-
-        // Close modal
-        function closeModalFunc() {
-            authModal.style.display = 'none';
-            authForm.reset();
-        }
-
-        // Toggle between sign in and sign up
-        function toggleForm(e) {
-            e.preventDefault();
-            openModal(!isSignUp);
-        }
-
-        // Show error message
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-        }
-
-        // Event Listeners
-        signinBtn.addEventListener('click', () => openModal(false));
-        signupBtn.addEventListener('click', () => openModal(true));
-        closeModal.addEventListener('click', closeModalFunc);
-        window.addEventListener('click', (event) => {
-            if (event.target == authModal) {
-                closeModalFunc();
+            if (!supabaseClient) {
+                console.error("Supabase client not initialized. Cannot check session.");
+                showAuthButtons(); // Default to showing login buttons
+                return;
             }
-        });
-
-        // Form submission
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
 
             try {
-                if (isSignUp) {
-                    const { data, error } = await supabase.auth.signUp({
-                        email,
-                        password
-                    });
-                    if (error) throw error;
-                    showError('Check your email for confirmation link');
-                } else {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email,
-                        password
-                    });
-                    if (error) throw error;
-                    closeModalFunc();
+                // CORRECT way to get session using Supabase v2 JS SDK
+                const { data, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    console.error("❌ Error getting initial session:", error.message);
+                    showAuthButtons();
+                    return;
                 }
-            } catch (error) {
-                showError(error.message);
+                
+                console.log("📥 Initial session data received:", data);
+                
+                if (data?.session?.user) {
+                    console.log("👤 User is already logged in:", data.session.user.email);
+                    showUser(data.session.user);
+                } else {
+                    console.log("📭 No active session found.");
+                    showAuthButtons();
+                }
+            } catch (err) {
+                console.error("💥 Unexpected error during initial session check:", err);
+                showAuthButtons();
             }
+
+            // --- Privacy Policy Modal Logic ---
+            if (privacyPolicyLink && privacyPolicyModal && closeModal) {
+                privacyPolicyLink.onclick = function(event) {
+                    event.preventDefault();
+                    privacyPolicyModal.style.display = "block";
+                }
+
+                closeModal.onclick = function() {
+                    privacyPolicyModal.style.display = "none";
+                }
+
+                window.onclick = function(event) {
+                    if (event.target == privacyPolicyModal) {
+                        privacyPolicyModal.style.display = "none";
+                    }
+                }
+            } else {
+                console.error("Privacy policy modal elements not found in DOM.");
+            }
+            // --- End of Privacy Policy Modal Logic ---
         });
 
-        // Logout
-        logoutBtn.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signOut();
-            if (error) console.error('Error logging out:', error);
-            else showAuthButtons();
-        });
+        // Listen for auth state changes
+        console.log("📡 Setting up Supabase auth state change listener...");
+        if (supabaseClient) {
+            const { data: authListener, error: listenerError } = supabaseClient.auth.onAuthStateChange((event, session) => {
+                console.log("🔄 Supabase Auth State Change Event:", event);
+                console.log("Session object in state change:", session?.user?.email || 'None');
+                
+                if (listenerError) {
+                    console.error("❌ Error setting up auth listener:", listenerError);
+                    return;
+                }
+
+                if (event === 'SIGNED_IN' && session?.user) {
+                    console.log("🚪 User signed in, updating UI...");
+                    showUser(session.user);
+                } else if (event === 'SIGNED_OUT' || !session) {
+                    console.log("🚪 User signed out or no session, updating UI...");
+                    showAuthButtons();
+                } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+                     console.log("🔄 Token refreshed for user:", session.user.email);
+                } else {
+                    console.log("ℹ️ Other auth event or state:", event, session?.user?.email || 'No user');
+                    if (session?.user) {
+                        showUser(session.user);
+                    } else {
+                        showAuthButtons();
+                    }
+                }
+            });
+
+            if (authListener?.subscription) {
+                console.log("🎧 Auth listener subscription active.");
+            } else {
+                console.warn("⚠️ Auth listener might not be set up correctly.");
+            }
+        }
+
+        if (signinBtn) {
+            signinBtn.addEventListener('click', () => {
+                console.log("Sign In button clicked.");
+            });
+        } else {
+            console.error("Sign In button not found in DOM.");
+        }
+
+        if (signupBtn) {
+            signupBtn.addEventListener('click', () => {
+                console.log("Sign Up button clicked.");
+            });
+        } else {
+            console.error("Sign Up button not found in DOM.");
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                console.log("Logout button clicked.");
+                try {
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) {
+                        console.error('❌ Error logging out:', error.message);
+                        alert(`⚠️ Logout failed: ${error.message}`);
+                    } else {
+                       console.log("✅ Logout successful via SDK.");
+                       showAuthButtons(); 
+                    }
+                } catch (err) {
+                    console.error('💥 Unexpected error during logout:', err);
+                    alert("💥 Unexpected error during logout. Please try again.");
+                }
+            });
+        } else {
+            console.error("Logout button not found in DOM.");
+        }
+
+        console.log("🏁 Script finished setting up initial event listeners.");
     </script>
 </body>
 </html>
